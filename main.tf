@@ -15,10 +15,21 @@ data "aws_subnet" "private_subnets" {
   id    = "${data.aws_subnet_ids.private_subnet_ids.ids[count.index]}"
 }
 
+data "template_file" "user_data" {
+  template = "${file("${path.module}/configure_rancher_nodes.sh")}"
+}
+
 resource "aws_security_group" "rancher_control_plane_sg" {
   name        = "rancher_control_plane_sg"
   description = "Rancher control plane security group"
   vpc_id      = "${var.vpc_id}"
+
+  ingress {
+    from_port   = 22 
+    to_port     = 22 
+    protocol    = "TCP"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   ingress {
     from_port   = 80
@@ -132,7 +143,21 @@ resource "aws_security_group" "rancher_control_plane_sg" {
     to_port     = 10254
     protocol    = "TCP"
     self        = true
-  }  
+  }
+
+  egress {
+    from_port   = 80 
+    to_port     = 80 
+    protocol    = "TCP"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 443 
+    to_port     = 443 
+    protocol    = "TCP"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
 }
 
@@ -145,9 +170,11 @@ module "ec2_rancher_control_plane_nodes_1" {
   instance_type          = "${var.instance_type}"
   key_name               = "${var.key_name}"
   monitoring             = true
+  associate_public_ip_address = true
   vpc_security_group_ids = ["${aws_security_group.rancher_control_plane_sg.id}"]
   subnet_id = "${element(data.aws_subnet_ids.private_subnet_ids.ids,0)}"
-  tags = {
+  user_data = "${data.template_file.user_data.rendered}"  
+tags = {
     Owner = "${var.resource_owner}"
     Domain = "${var.resource_domain}"
     Environment = "${var.environment}"
@@ -163,26 +190,10 @@ module "ec2_rancher_control_plane_nodes_2" {
   instance_type          = "${var.instance_type}"
   key_name               = "${var.key_name}"
   monitoring             = true
+  associate_public_ip_address = true
   vpc_security_group_ids = ["${aws_security_group.rancher_control_plane_sg.id}"]
   subnet_id = "${element(data.aws_subnet_ids.private_subnet_ids.ids,1)}"
-  tags = {
-    Owner = "${var.resource_owner}"
-    Domain = "${var.resource_domain}"
-    Environment = "${var.environment}"
-  }
-}
-
-module "ec2_rancher_control_plane_nodes_3" {
-  source                 = "terraform-aws-modules/ec2-instance/aws"
-  version                = "1.12.0"
-  name                   = "${var.instance_name}"
-  instance_count         = "${var.instance_count}"
-  ami                    = "${var.ami_id}"
-  instance_type          = "${var.instance_type}"
-  key_name               = "${var.key_name}"
-  monitoring             = true
-  vpc_security_group_ids = ["${aws_security_group.rancher_control_plane_sg.id}"]
-  subnet_id = "${element(data.aws_subnet_ids.private_subnet_ids.ids,2)}"
+  user_data = "${data.template_file.user_data.rendered}"
   tags = {
     Owner = "${var.resource_owner}"
     Domain = "${var.resource_domain}"
