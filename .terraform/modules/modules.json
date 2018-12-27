@@ -1,0 +1,1 @@
+{"Modules":[{"Source":"terraform-aws-modules/ec2-instance/aws","Key":"1.rancher_control_plane_nodes;terraform-aws-modules/ec2-instance/aws.1.12.0","Version":"1.12.0","Dir":".terraform/modules/e44eb6daa18913dde4f95db8f1cbaf74","Root":"terraform-aws-modules-terraform-aws-ec2-instance-936c26a"}]}

@@ -5,14 +5,13 @@ provider "aws" {
 }
 
 data "aws_subnet_ids" "private_subnet_ids" {
-  vpc_id      = "${var.vpc_id}"
+  vpc_id   = "${var.vpc_id}"
   tags {
     Tier   = "Private"
   }
 }
 
 data "aws_subnet" "private_subnets" {
-  count = "${length(data.aws_subnet_ids.private_subnet_ids)}"
   id    = "${data.aws_subnet_ids.private_subnet_ids.ids[count.index]}"
 }
 
@@ -137,7 +136,7 @@ resource "aws_security_group" "rancher_control_plane_sg" {
 
 }
 
-resource "rancher_control_plane_nodes" {
+module "ec2_rancher_control_plane_nodes_1" {
   source                 = "terraform-aws-modules/ec2-instance/aws"
   version                = "1.12.0"
   name                   = "${var.instance_name}"
@@ -147,7 +146,43 @@ resource "rancher_control_plane_nodes" {
   key_name               = "${var.key_name}"
   monitoring             = true
   vpc_security_group_ids = ["${aws_security_group.rancher_control_plane_sg.id}"]
-  subnet_id = "${element(data.aws_subnet_ids.selected.ids, count.index)}"
+  subnet_id = "${element(data.aws_subnet_ids.private_subnet_ids.ids,0)}"
+  tags = {
+    Owner = "${var.resource_owner}"
+    Domain = "${var.resource_domain}"
+    Environment = "${var.environment}"
+  }
+}
+
+module "ec2_rancher_control_plane_nodes_2" {
+  source                 = "terraform-aws-modules/ec2-instance/aws"
+  version                = "1.12.0"
+  name                   = "${var.instance_name}"
+  instance_count         = "${var.instance_count}"
+  ami                    = "${var.ami_id}"
+  instance_type          = "${var.instance_type}"
+  key_name               = "${var.key_name}"
+  monitoring             = true
+  vpc_security_group_ids = ["${aws_security_group.rancher_control_plane_sg.id}"]
+  subnet_id = "${element(data.aws_subnet_ids.private_subnet_ids.ids,1)}"
+  tags = {
+    Owner = "${var.resource_owner}"
+    Domain = "${var.resource_domain}"
+    Environment = "${var.environment}"
+  }
+}
+
+module "ec2_rancher_control_plane_nodes_3" {
+  source                 = "terraform-aws-modules/ec2-instance/aws"
+  version                = "1.12.0"
+  name                   = "${var.instance_name}"
+  instance_count         = "${var.instance_count}"
+  ami                    = "${var.ami_id}"
+  instance_type          = "${var.instance_type}"
+  key_name               = "${var.key_name}"
+  monitoring             = true
+  vpc_security_group_ids = ["${aws_security_group.rancher_control_plane_sg.id}"]
+  subnet_id = "${element(data.aws_subnet_ids.private_subnet_ids.ids,2)}"
   tags = {
     Owner = "${var.resource_owner}"
     Domain = "${var.resource_domain}"

@@ -1,1 +1,6 @@
-instance_count = "3"
+instance_count = "1"
+ami_id = "ami-0ac019f4fcb7cb7e6"
+vpc_id = "vpc-505b032b"
+key_name = "test1"
+resource_domain = "Rancher Control Plane"
+resource_owner = "venkat.k"
