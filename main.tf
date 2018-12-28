@@ -351,7 +351,6 @@ resource "aws_lb_listener" "https_listener" {
 data "template_file" "cluster_template" {
     template = "${file("cluster.tpl")}"
     vars {
-        private_ip_1 = "${local.private_ip_1}" 
         user        = "${var.user}"
         snapshot_flag = "${var.snapshot_flag}"
         snapshot_retention = "${var.snapshot_retention}"
