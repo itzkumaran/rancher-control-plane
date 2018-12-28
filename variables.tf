@@ -38,3 +38,10 @@ variable "environment" {
   default = "dev"
 }
 
+variable "alb_name" {
+  type = "string"
+}
+
+variable "alb_ssl_cert_arn" {
+  type = "string"
+}
