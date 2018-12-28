@@ -1,8 +1,8 @@
 nodes:
     user: "${user}" 
     user: "${user}" 
-    user: "${user}" 
-
+    user: "${user}"
+    role: [controlplane]
 services:
   etcd:
     snapshot: "${snapshot_flag}" 

@@ -280,13 +280,6 @@ module "elb_rancher" {
   security_groups = ["${aws_security_group.alb_sg.id}"]
   subnets  = ["${data.aws_subnet_ids.public_subnet_ids.ids}"]
   vpc_id   = "${var.vpc_id}"
-  https_listeners               = "${list(map("certificate_arn", "${var.alb_ssl_cert_arn}", "port", 443))}"
-  https_listeners_count         = "1"
-  http_tcp_listeners            = "${list(map("port", "80", "protocol", "HTTP"))}"
-  http_tcp_listeners_count      = "1"
-  target_groups                 = "${list(map("name", "TG-HTTP", "backend_protocol", "HTTP", "backend_port", "80"),
-                                   map("name", "TG-HTTPS", "backend_protocol",    "HTTPS", "backend_port", "443"))}"
-  target_groups_count           = "2"
   logging_enabled               = false
   tags = {
     Owner = "${var.resource_owner}"
@@ -295,8 +288,47 @@ module "elb_rancher" {
   }
 }
 
+  resource "aws_lb_target_group" "rancher_https_tg" {
+  name        = "rancher-https-tg"
+  port        = 443
+  protocol    = "HTTPS"
+  target_type = "instance"
+  vpc_id      = "${var.vpc_id}"
+}
+
+
+resource "aws_lb_listener" "http_listener" {
+  load_balancer_arn = "${module.elb_rancher.load_balancer_id}"
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+
+resource "aws_lb_listener" "https_listener" {
+  load_balancer_arn = "${module.elb_rancher.load_balancer_id}"
+  port              = "443"
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2015-05"
+  certificate_arn   = "${var.alb_ssl_cert_arn}"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = "${aws_lb_target_group.rancher_https_tg.arn}"
+  }
+}
+
 data "template_file" "cluster_template" {
     template = "${file("cluster.tpl")}"
+    count = "${length(var.role_list)}"
     vars {
         user        = "${var.user}"
         snapshot_flag = "${var.snapshot_flag}"
@@ -310,4 +342,8 @@ resource "null_resource" "export_rendered_template" {
   provisioner "local-exec" {
     command = "cat > cluster.yaml <<EOL\n${join(",\n", data.template_file.cluster_template.*.rendered)}\nEOL"
   }
+}
+
+locals {
+  private_ip_1 = "${module.ec2_rancher_control_plane_nodes_1.private_ip}" 
 }
