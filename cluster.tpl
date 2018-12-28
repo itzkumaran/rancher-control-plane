@@ -1,5 +1,5 @@
 nodes:
-  - address: "1.2.3.4" 
+  - address: "${private_ip_1}" 
     internal_address: "1.2.3.4" 
     user: "${user}" 
     role: [controlplane] 
