@@ -1,0 +1,21 @@
+nodes:
+  - address: "${public_ip_1}" 
+    internal_address: "${private_ip_1}" 
+    user: "${user}" 
+    role: ["${role_list}"] 
+  - address:"{public_ip_2}" 
+    internal_address: "${private_ip_2}" 
+    user: "${user}" 
+    role: ["${role_list}"] 
+  - address: "${public_ip_3}" 
+    internal_address: "${private_ip_3}" 
+    user: "${user}" 
+    role: ["${role_list}"]
+
+services:
+  etcd:
+    snapshot: "${snapshot_flag}" 
+    creation: "${snapshot_creation}" 
+    retention: "${snapshot_retention}" 
+
+ignore_docker_version: "${ignore_docker_version}" 

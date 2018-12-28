@@ -1,0 +1,13 @@
+nodes:
+    user: "ubuntu" 
+    user: "ubuntu" 
+    user: "ubuntu" 
+
+services:
+  etcd:
+    snapshot: "true" 
+    creation: "6h" 
+    retention: "24h" 
+
+ignore_docker_version: "true" 
+

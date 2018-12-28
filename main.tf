@@ -197,14 +197,14 @@ resource "aws_security_group" "alb_sg" {
     from_port   = 443
     to_port     = 443
     protocol    = "TCP"
-    cidr_blocks = ["${aws_security_group.rancher_control_plane_sg.id}"]
+    security_groups = ["${aws_security_group.rancher_control_plane_sg.id}"]
   }
 
   egress {
     from_port   = 80
     to_port     = 80
     protocol    = "TCP"
-    cidr_blocks = ["${aws_security_group.rancher_control_plane_sg.id}"]
+    security_groups = ["${aws_security_group.rancher_control_plane_sg.id}"]
   }  
   tags = {
     Owner = "${var.resource_owner}"
@@ -287,9 +287,27 @@ module "elb_rancher" {
   target_groups                 = "${list(map("name", "TG-HTTP", "backend_protocol", "HTTP", "backend_port", "80"),
                                    map("name", "TG-HTTPS", "backend_protocol",    "HTTPS", "backend_port", "443"))}"
   target_groups_count           = "2"
+  logging_enabled               = false
   tags = {
     Owner = "${var.resource_owner}"
     Domain = "${var.resource_domain}"
     Environment = "${var.environment}"
+  }
+}
+
+data "template_file" "cluster_template" {
+    template = "${file("cluster.tpl")}"
+    vars {
+        user        = "${var.user}"
+        snapshot_flag = "${var.snapshot_flag}"
+        snapshot_retention = "${var.snapshot_retention}"
+        snapshot_creation = "${var.snapshot_creation}"
+        ignore_docker_version = "${var.ignore_docker_version}"
+    }
+}
+
+resource "null_resource" "export_rendered_template" {
+  provisioner "local-exec" {
+    command = "cat > cluster.yaml <<EOL\n${join(",\n", data.template_file.cluster_template.*.rendered)}\nEOL"
   }
 }
