@@ -1,8 +1,8 @@
 nodes:
-  - address: "${public_ip_1}" 
-    internal_address: "${private_ip_1}" 
+  - address: "1.2.3.4" 
+    internal_address: "1.2.3.4" 
     user: "${user}" 
-    role: ["${role_list}"] 
+    role: ["controlplane"] 
   - address:"{public_ip_2}" 
     internal_address: "${private_ip_2}" 
     user: "${user}" 

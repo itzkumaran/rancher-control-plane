@@ -288,14 +288,36 @@ module "elb_rancher" {
   }
 }
 
-  resource "aws_lb_target_group" "rancher_https_tg" {
+resource "aws_lb_target_group" "rancher_https_tg" {
   name        = "rancher-https-tg"
   port        = 443
   protocol    = "HTTPS"
   target_type = "instance"
   vpc_id      = "${var.vpc_id}"
+  tags = {
+    Owner = "${var.resource_owner}"
+    Domain = "${var.resource_domain}"
+    Environment = "${var.environment}"
+  }
 }
 
+resource "aws_lb_target_group_attachment" "tg_attach_1" {
+  target_group_arn = "${aws_lb_target_group.rancher_https_tg.arn}"
+  target_id        = "${element(module.ec2_rancher_control_plane_nodes_1.id,0)}"
+  port             = 443 
+}
+
+resource "aws_lb_target_group_attachment" "tg_attach_2" {
+  target_group_arn = "${aws_lb_target_group.rancher_https_tg.arn}" 
+  target_id        = "${element(module.ec2_rancher_control_plane_nodes_2.id,0)}" 
+  port             = 443
+}
+
+resource "aws_lb_target_group_attachment" "tg_attach_3" {
+  target_group_arn = "${aws_lb_target_group.rancher_https_tg.arn}" 
+  target_id        = "${element(module.ec2_rancher_control_plane_nodes_1.id,0)}" 
+  port             = 443
+}
 
 resource "aws_lb_listener" "http_listener" {
   load_balancer_arn = "${module.elb_rancher.load_balancer_id}"
@@ -328,7 +350,6 @@ resource "aws_lb_listener" "https_listener" {
 
 data "template_file" "cluster_template" {
     template = "${file("cluster.tpl")}"
-    count = "${length(var.role_list)}"
     vars {
         user        = "${var.user}"
         snapshot_flag = "${var.snapshot_flag}"
