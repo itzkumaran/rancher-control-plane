@@ -1,0 +1,22 @@
+nodes:
+  - address: "172.31.6.28" 
+    internal_address: "172.31.6.28" 
+    user: "ubuntu" 
+    role: [controlplane] 
+  - address: "172.31.6.28" 
+    internal_address: "172.31.6.28" 
+    user: "ubuntu" 
+    role: [controlplane]
+  - address: "172.31.6.28" 
+    internal_address: "172.31.6.28" 
+    user: "ubuntu" 
+    role: [controlplane]
+
+services:
+  etcd:
+    snapshot: "true" 
+    creation: "6h" 
+    retention: "24h" 
+
+ignore_docker_version: "true" 
+
