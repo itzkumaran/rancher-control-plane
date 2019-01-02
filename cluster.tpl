@@ -1,14 +1,14 @@
 nodes:
-  - address: "1.2.3.4" 
-    internal_address: "1.2.3.4" 
+  - address: "${private_ip_1}" 
+    internal_address: "${private_ip_1}" 
     user: "${user}" 
     role: [controlplane] 
-  - address: "2.3.4.5" 
-    internal_address: "2.3.4.5" 
+  - address: "${private_ip_2}"
+    internal_address: "${private_ip_2}" 
     user: "${user}" 
     role: [controlplane]
-  - address: "3.4.5.6" 
-    internal_address: "3.4.5.6" 
+  - address: "${private_ip_3}" 
+    internal_address: "${private_ip_3}" 
     user: "${user}" 
     role: [controlplane]
 

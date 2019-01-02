@@ -351,9 +351,6 @@ resource "aws_lb_listener" "https_listener" {
 data "template_file" "cluster_template" {
     template = "${file("cluster.tpl")}"
     vars {
-        private_ip_1 = "${module.ec2_rancher_control_plane_nodes_1.private_ip[0]}"
-        private_ip_2 = "${module.ec2_rancher_control_plane_nodes_2.private_ip[0]}"
-        private_ip_3 = "${module.ec2_rancher_control_plane_nodes_3.private_ip[0]}"
         user        = "${var.user}"
         snapshot_flag = "${var.snapshot_flag}"
         snapshot_retention = "${var.snapshot_retention}"
@@ -366,4 +363,8 @@ resource "null_resource" "export_rendered_template" {
   provisioner "local-exec" {
     command = "cat > cluster.yaml <<EOL\n${join(",\n", data.template_file.cluster_template.*.rendered)}\nEOL"
   }
+}
+
+locals {
+  private_ip_1 = "${module.ec2_rancher_control_plane_nodes_1.private_ip}" 
 }
